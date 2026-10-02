@@ -1,0 +1,18 @@
+# Arbeitsdaten: Kursinhalte, Moodle-Exporte und Libraries gehören nicht ins Repo
+content/
+originale/
+libraries/
+temp/
+uploads/
+libraryRegistry.json
+
+# Projekt-Instruktionen mit institutionellem Bezug: bleiben lokal
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# macOS, Editor, lokale Testartefakte
+.DS_Store
+.vscode/
+.idea/
+.playwright-mcp/
