@@ -5,7 +5,7 @@ H5P-Inhalte aus Moodle am eigenen Rechner bearbeiten und als .h5p-Datei wieder n
 Das Projekt ist eine kleine Ergänzung zu [h5p-cli](https://github.com/h5p/h5p-cli), dem Entwicklerwerkzeug der H5P Group. h5p-cli liefert den lokalen Webserver mit Editor und Vorschau. Dieses Repo fügt drei Dinge hinzu:
 
 - **Import mit Moodle-Libraries.** Beim Import einer .h5p aus Moodle werden die darin enthaltenen Libraries installiert, genau in den Versionen des Moodle-Systems.
-- **Geprüfter Export.** Der Export nimmt die Libraries unverändert aus der ursprünglichen Moodle-Datei und tauscht nur den Inhalt aus. Weicht etwas ab, entsteht keine Datei.
+- **Geprüfter Export.** Der Export nimmt die Libraries unverändert aus den Moodle-Dateien, die in diesem Ordner importiert wurden, und packt nur die ein, die der Inhalt braucht. Weicht etwas ab, entsteht keine Datei.
 - **Schnellspeichern mit Vorschau.** Links die Vorschau, rechts der Editor. Speichern mit Cmd+S (Windows: Strg+S), die Vorschau lädt neu.
 
 ## Wozu
@@ -54,20 +54,46 @@ Dann im Browser http://localhost:8080 öffnen. Der Server läuft, solange das Te
 4. **Exportieren:** Rechts oben auf „Export für Moodle“ klicken. Die Datei wird gespeichert und mit Datum im Namen heruntergeladen.
 5. **In Moodle** die exportierte Datei hochladen, zuerst in die Inhaltsdatenbank, nicht direkt in einen laufenden Kurs.
 
+### Älteren Inhalt aktualisieren
+
+Moodle hält von jedem Inhaltstyp mehrere Versionen nebeneinander. Ein Inhalt bleibt auf seiner Version, bis ihn jemand im Moodle-Editor speichert. h5p-cli kennt je Inhaltstyp nur eine Version und hebt ältere Inhalte beim Öffnen auf diese an, wie der Moodle-Editor.
+
+1. Zuerst einen aktuellen Inhalt desselben Typs aus Moodle importieren, etwa ein frisch angelegtes, leeres Interactive Book. So kommen die neuesten Versionen in den Ordner.
+2. Dann den älteren Inhalt importieren und bearbeiten. Der Export nennt die angehobenen Versionen.
+
+Wird der ältere Inhalt zuerst importiert, bleibt der Ordner auf dem alten Stand. Dann den Ordner neu aufsetzen.
+
+### Neuen Inhalt anlegen
+
+Im Dashboard unter „Create“ einen Namen vergeben und den Inhaltstyp wählen. Exportieren geht nur, wenn `moodle-stand.txt` vorliegt (siehe unten) und alle nötigen Libraries aus einer importierten Moodle-Datei stammen. Am einfachsten vorher einen leeren Inhalt desselben Typs aus Moodle importieren.
+
 ## Was der Export prüft
 
-- Jede Library-Datei im Paket stimmt mit der ursprünglichen Moodle-Datei überein (Pfad und Prüfsumme).
-- Der Inhalt verwendet nur Inhaltstypen, die in der ursprünglichen Moodle-Datei enthalten sind.
+- Alles, was der Inhalt verwendet, steckt samt Abhängigkeiten in einer der Moodle-Dateien in `originale/`.
+- Jede Library-Datei im Paket stimmt mit ihrer Moodle-Datei überein (Pfad und Prüfsumme).
+- Wenn `moodle-stand.txt` vorliegt: Jede Library im Paket ist im Ziel-Moodle in dieser Version installiert, dort mit gleichem oder neuerem Patch-Stand.
 
-Schlägt eine Prüfung fehl, bricht der Export ab und nennt den Grund. Geprüft wird gegen die Datei, die aus Moodle heruntergeladen wurde, nicht gegen das laufende Moodle.
+Die Abhängigkeitsliste in `h5p.json` schreibt der Export selbst, mit genau den Libraries, die der Inhalt lädt. h5p-cli trägt dort sonst alle installierten ein.
+
+Schlägt eine Prüfung fehl, bricht der Export ab und nennt den Grund.
+
+### Moodle-Stand hinterlegen (`moodle-stand.txt`)
+
+Optional für bearbeitete Inhalte, Pflicht für neu angelegte. Nur mit Admin-Zugang zum Moodle möglich.
+
+1. In Moodle: Website-Administration → H5P → H5P-Inhaltstypen verwalten.
+2. Auf beiden Reitern („Installierte H5P-Inhaltstypen“ und „Installierte H5P-Bibliotheken“) die Tabelle markieren, kopieren und untereinander in eine Datei `moodle-stand.txt` in diesem Ordner einfügen.
+3. Zeilen mit `#` sind Kommentare, etwa für Instanz und Datum. Nach Library-Updates im Moodle die Datei neu erstellen.
+
+Die Datei bleibt lokal und wird nicht ins Repo übernommen.
 
 ## Regeln und Grenzen
 
-- **Nur Inhalte bearbeiten, die aus Moodle importiert wurden.** Für neu angelegte Inhalte gibt es keinen Export.
-- **Im Editor nur Inhaltstypen verwenden, die der Inhalt schon enthält.** Andere fehlen in der Moodle-Datei, der Export lehnt sie ab.
+- **Neu angelegte Inhalte nur mit `moodle-stand.txt` exportieren.** Ohne eigene Moodle-Datei ist die Liste die einzige Absicherung.
+- **Im Editor nur Inhaltstypen verwenden, die in einer importierten Moodle-Datei stecken.** Andere lehnt der Export ab.
 - **`h5p setup`, `h5p install` und `h5p clone` sind in diesem Ordner gesperrt.** Sie würden Libraries von GitHub holen.
-- **Ein Ordner, ein Moodle-Stand.** h5p-cli führt je Library nur eine Version. Inhalte aus verschiedenen Moodle-Systemen gehören in getrennte Ordner.
-- **Die ursprünglichen Moodle-Dateien liegen in `originale/`.** Ohne sie ist kein Export möglich, also nicht löschen, solange am Inhalt gearbeitet wird.
+- **Ein Ordner, ein Moodle-Stand.** Inhalte aus verschiedenen Moodle-Systemen gehören in getrennte Ordner. Das gilt auch innerhalb einer Instanz: Das H5P im Moodle-Kern (Inhaltsspeicher, Aktivität „H5P“) und das Plugin mod_hvp (Aktivität „Interaktiver Inhalt“) haben getrennte Library-Bestände. Eine Datei aus dem Inhaltsspeicher kann noch Libraries aus mod_hvp tragen, wenn sie dort nie im Editor gespeichert wurde. `moodle-stand.txt` deckt solche Mischungen auf.
+- **Die ursprünglichen Moodle-Dateien liegen in `originale/`.** Aus ihnen kommen die Libraries für alle Exporte des Ordners, also nicht löschen.
 - **Internet wird gebraucht:** beim Einrichten und beim ersten Öffnen eines Inhalts, weil h5p-cli dann Beschreibungsdateien von GitHub nachlädt.
 - **Nur mit h5p-cli 1.1.6 geprüft.** Die Ergänzungen greifen in Interna von h5p-cli ein. Bei einer anderen Version erscheint beim Start eine Warnung.
 
@@ -86,9 +112,10 @@ Schlägt eine Prüfung fehl, bricht der Export ab und nennt den Grund. Geprüft 
 |---|---|
 | `config.js` | wird von h5p-cli aus dem Arbeitsordner geladen und hängt die Ergänzungen ein |
 | `tools/moodle-paket.js` | Import und Export mit den Libraries aus Moodle |
+| `moodle-stand.txt` | optional, lokal: Library-Stand des Ziel-Moodle für die Prüfung beim Export |
 | `tools/schnellspeichern.js` | Speichern und Export direkt aus dem Editor |
 
-Kursinhalte, Moodle-Dateien und Libraries (`content/`, `originale/`, `libraries/`, `temp/`) bleiben lokal und werden nicht ins Repo übernommen.
+Kursinhalte, Moodle-Dateien, Libraries und der Moodle-Stand (`content/`, `originale/`, `libraries/`, `temp/`, `moodle-stand.txt`) bleiben lokal und werden nicht ins Repo übernommen.
 
 ## Lizenz und Hinweise
 

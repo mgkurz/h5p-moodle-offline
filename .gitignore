@@ -16,3 +16,6 @@ CLAUDE.local.md
 .vscode/
 .idea/
 .playwright-mcp/
+
+# Library-Stand des eigenen Ziel-Moodle, instanzspezifisch
+moodle-stand.txt
