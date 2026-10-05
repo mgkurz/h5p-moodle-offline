@@ -102,7 +102,7 @@ Die Datei bleibt lokal und wird nicht ins Repo übernommen.
 | Was | Stand |
 |---|---|
 | Import, Bearbeiten, Schnellspeichern, Export auf macOS | getestet mit Interactive Books aus Moodle 4.5, auch beim Öffnen hochgestuft (1.11 → 1.15) und neu angelegt |
-| Upload der exportierten Datei nach Moodle | Inhaltsdatenbank nimmt ein hochgestuftes Interactive Book an, die Übersicht wird angezeigt. Durchklicken aller Seiten und unveränderter Library-Bestand im Moodle noch nicht geprüft |
+| Upload der exportierten Datei nach Moodle | getestet mit einem hochgestuften Interactive Book in der Inhaltsdatenbank (Moodle 4.5): Stichprobe der eingebetteten Course Presentations und Image Hotspots ohne Befund |
 | Windows | noch nicht getestet |
 | Felder mit Textformatierung beim Schnellspeichern | noch nicht getestet |
 
